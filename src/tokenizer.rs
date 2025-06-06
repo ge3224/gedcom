@@ -38,7 +38,7 @@ pub struct Tokenizer<'a> {
 impl<'a> Tokenizer<'a> {
     /// Creates a new tokenizer for a char interator of gedcom file contents
     #[must_use]
-    pub fn new(chars: Chars<'a>) -> Tokenizer {
+    pub fn new(chars: Chars<'a>) -> Tokenizer<'a> {
         Tokenizer {
             current_char: '\n',
             current_token: Token::None,

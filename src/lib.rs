@@ -63,7 +63,7 @@ pub struct GedcomDocument<'a> {
 impl<'a> GedcomDocument<'a> {
     /// Creates a parser state machine for parsing a gedcom file as a chars iterator
     #[must_use]
-    pub fn new(chars: Chars<'a>) -> GedcomDocument {
+    pub fn new(chars: Chars<'a>) -> GedcomDocument<'a> {
         let mut tokenizer = Tokenizer::new(chars);
         tokenizer.next_token();
         GedcomDocument { tokenizer }
