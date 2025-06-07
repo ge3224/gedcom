@@ -1,7 +1,8 @@
 use crate::{
+    parse_subset,
     tokenizer::{Token, Tokenizer},
-    types::{Address, ChangeDate, MultimediaLink, Note, UserDefinedDataset, Xref},
-    Parser, parse_subset,
+    types::{Address, ChangeDate, MultimediaLink, Note, UserDefinedTag, Xref},
+    Parser,
 };
 
 #[cfg(feature = "json")]
@@ -37,7 +38,7 @@ pub struct Submitter {
     pub note: Option<Note>,
     /// Phone number of the submitter
     pub phone: Option<String>,
-    pub custom_data: Vec<Box<UserDefinedDataset>>,
+    pub custom_data: Vec<Box<UserDefinedTag>>,
 }
 
 impl Submitter {

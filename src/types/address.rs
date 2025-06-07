@@ -5,7 +5,7 @@ use std::fmt;
 use crate::{
     parse_subset,
     tokenizer::{Token, Tokenizer},
-    types::UserDefinedDataset,
+    types::UserDefinedTag,
     Parser,
 };
 
@@ -21,7 +21,7 @@ pub struct Address {
     pub state: Option<String>,
     pub post: Option<String>,
     pub country: Option<String>,
-    pub custom_data: Vec<Box<UserDefinedDataset>>,
+    pub custom_data: Vec<Box<UserDefinedTag>>,
 }
 
 impl Address {

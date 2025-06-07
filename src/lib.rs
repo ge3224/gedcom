@@ -32,7 +32,7 @@ use tokenizer::{Token, Tokenizer};
 pub mod types;
 use types::{
     Family, Header, Individual, MultimediaRecord, Repository, Source, Submission, Submitter,
-    UserDefinedDataset,
+    UserDefinedTag,
 };
 
 /// The GedcomDocument can convert the token list into a data structure. The order of the Dataset
@@ -76,7 +76,7 @@ pub fn parse_subset<F>(
     tokenizer: &mut Tokenizer,
     level: u8,
     mut tag_handler: F,
-) -> Vec<Box<UserDefinedDataset>>
+) -> Vec<Box<UserDefinedTag>>
 where
     F: FnMut(&str, &mut Tokenizer),
 {
@@ -95,7 +95,7 @@ where
             }
             Token::CustomTag(tag) => {
                 let tag_clone = tag.clone();
-                non_standard_dataset.push(Box::new(UserDefinedDataset::new(
+                non_standard_dataset.push(Box::new(UserDefinedTag::new(
                     tokenizer,
                     level + 1,
                     &tag_clone,
@@ -149,7 +149,7 @@ pub struct GedcomData {
     /// so that they will not conflict with future GEDCOM standard tags. Systems that read
     /// user-defined tags must consider that they have meaning only with respect to a system
     /// contained in the HEAD.SOUR context.
-    pub custom_data: Vec<Box<UserDefinedDataset>>,
+    pub custom_data: Vec<Box<UserDefinedTag>>,
 }
 
 // should maybe store these by xref if available?
@@ -198,7 +198,7 @@ impl GedcomData {
     }
 
     /// Adds a `UserDefinedData` to the tree
-    pub fn add_custom_data(&mut self, non_standard_data: UserDefinedDataset) {
+    pub fn add_custom_data(&mut self, non_standard_data: UserDefinedTag) {
         self.custom_data.push(Box::new(non_standard_data));
     }
 
@@ -261,7 +261,7 @@ impl Parser for GedcomData {
                 };
             } else if let Token::CustomTag(tag) = &tokenizer.current_token {
                 let tag_clone = tag.clone();
-                self.add_custom_data(UserDefinedDataset::new(tokenizer, level + 1, &tag_clone));
+                self.add_custom_data(UserDefinedTag::new(tokenizer, level + 1, &tag_clone));
                 // self.add_custom_data(parse_custom_tag(tokenizer, tag_clone));
                 while tokenizer.current_token != Token::Level(level) {
                     tokenizer.next_token();

@@ -2,8 +2,7 @@ use crate::{
     parse_subset,
     tokenizer::{Token, Tokenizer},
     types::{
-        ChangeDate, Date, EventDetail, MultimediaRecord, Note, RepoCitation, UserDefinedDataset,
-        Xref,
+        ChangeDate, Date, EventDetail, MultimediaRecord, Note, RepoCitation, UserDefinedTag, Xref,
     },
     Parser,
 };
@@ -26,9 +25,9 @@ pub struct Source {
     pub multimedia: Vec<MultimediaRecord>,
     pub notes: Vec<Note>,
     pub repo_citations: Vec<RepoCitation>,
-    /// handles "RFN" tag; found in Ancestry.com export 
+    /// handles "RFN" tag; found in Ancestry.com export
     pub submitter_registered_rfn: Option<String>,
-    pub custom_data: Vec<Box<UserDefinedDataset>>,
+    pub custom_data: Vec<Box<UserDefinedTag>>,
 }
 
 impl Source {
@@ -139,10 +138,10 @@ pub struct SourceCitation {
     pub data: Option<SourceCitationData>,
     pub note: Option<Note>,
     pub certainty_assessment: Option<CertaintyAssessment>,
-    /// handles "RFN" tag; found in Ancestry.com export 
+    /// handles "RFN" tag; found in Ancestry.com export
     pub submitter_registered_rfn: Option<String>,
     pub multimedia: Vec<MultimediaRecord>,
-    pub custom_data: Vec<Box<UserDefinedDataset>>,
+    pub custom_data: Vec<Box<UserDefinedTag>>,
 }
 
 impl SourceCitation {

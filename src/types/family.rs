@@ -3,7 +3,7 @@ use crate::{
     tokenizer::{Token, Tokenizer},
     types::{
         event::HasEvents, ChangeDate, EventDetail, MultimediaRecord, Note, SourceCitation,
-        UserDefinedDataset, Xref,
+        UserDefinedTag, Xref,
     },
     Parser,
 };
@@ -29,7 +29,7 @@ pub struct Family {
     pub sources: Vec<SourceCitation>,
     pub multimedia: Vec<MultimediaRecord>,
     pub notes: Vec<Note>,
-    pub custom_data: Vec<Box<UserDefinedDataset>>,
+    pub custom_data: Vec<Box<UserDefinedTag>>,
 }
 
 impl Family {

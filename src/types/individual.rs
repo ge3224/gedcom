@@ -3,7 +3,7 @@ use crate::{
     tokenizer::{Token, Tokenizer},
     types::{
         event::HasEvents, ChangeDate, Date, EventDetail, MultimediaRecord, Note, SourceCitation,
-        UserDefinedDataset, Xref,
+        UserDefinedTag, Xref,
     },
     Parser,
 };
@@ -52,7 +52,7 @@ pub struct Individual {
     pub last_updated: Option<String>,
     pub note: Option<Note>,
     pub change_date: Option<ChangeDate>,
-    pub custom_data: Vec<Box<UserDefinedDataset>>,
+    pub custom_data: Vec<Box<UserDefinedTag>>,
 }
 
 impl Individual {
@@ -194,7 +194,7 @@ pub struct Gender {
     pub value: GenderType,
     pub fact: Option<String>,
     pub sources: Vec<SourceCitation>,
-    pub custom_data: Vec<Box<UserDefinedDataset>>,
+    pub custom_data: Vec<Box<UserDefinedTag>>,
 }
 
 impl Gender {
@@ -364,7 +364,7 @@ pub struct FamilyLink {
     pub child_linkage_status: Option<ChildLinkStatus>,
     pub adopted_by: Option<AdoptedByWhichParent>,
     pub note: Option<Note>,
-    pub custom_data: Vec<Box<UserDefinedDataset>>,
+    pub custom_data: Vec<Box<UserDefinedTag>>,
 }
 
 impl FamilyLink {
