@@ -38,24 +38,6 @@ use types::{
 /// The GedcomDocument can convert the token list into a data structure. The order of the Dataset
 /// should be as follows: the HEAD must come first and TRLR must be last, with any RECORDs in
 /// between.
-///
-/// # A Minimal Example
-///
-/// ```rust
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///    0 HEAD\n\
-///    1 GEDC\n\
-///    2 VERS 5.5\n\
-///    0 TRLR";
-///
-/// let mut doc = GedcomDocument::new(sample.chars());
-/// let data = doc.parse_document();
-///
-/// let head = data.header.unwrap();
-/// let gedc = head.gedcom.unwrap();
-/// assert_eq!(gedc.version.unwrap(), "5.5");
-/// ```
 pub struct GedcomDocument<'a> {
     tokenizer: Tokenizer<'a>,
 }
@@ -131,43 +113,19 @@ where
     non_standard_dataset
 }
 
-/// GedcomData is the data structure representing all the data within a gedcom file
+/// Complete representation of a GEDCOM file's data structure.
 ///
-/// # Example
+/// This struct contains all the parsed data from a GEDCOM file, organized into
+/// their respective collections according to the GEDCOM 5.5.1 specification.
+/// The structure maintains the hierarchical relationships between different
+/// record types while providing efficient access to each category.
 ///
-/// ```rust
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///     0 HEAD\n\
-///     1 GEDC\n\
-///     2 VERS 5.5\n\
-///     0 @SUBMITTER@ SUBM\n\
-///     0 @PERSON1@ INDI\n\
-///     0 @FAMILY1@ FAM\n\
-///     0 @R1@ REPO\n\
-///     0 @SOURCE1@ SOUR\n\
-///     0 @MEDIA1@ OBJE\n\
-///     0 _MYOWNTAG This is a non-standard tag. Not recommended but allowed\n\
-///     0 TRLR";
+/// # GEDCOM File Structure
 ///
-/// let mut doc = GedcomDocument::new(sample.chars());
-/// let data = doc.parse_document();
-///
-/// assert_eq!(data.submitters.len(), 1);
-/// assert_eq!(data.submitters[0].xref.as_ref().unwrap(), "@SUBMITTER@");
-///
-/// assert_eq!(data.individuals.len(), 1);
-/// assert_eq!(data.individuals[0].xref.as_ref().unwrap(), "@PERSON1@");
-///
-/// assert_eq!(data.families.len(), 1);
-/// assert_eq!(data.families[0].xref.as_ref().unwrap(), "@FAMILY1@");
-///
-/// assert_eq!(data.repositories.len(), 1);
-/// assert_eq!(data.repositories[0].xref.as_ref().unwrap(), "@R1@");
-///
-/// assert_eq!(data.sources.len(), 1);
-/// assert_eq!(data.sources[0].xref.as_ref().unwrap(), "@SOURCE1@");
-/// ```
+/// A valid GEDCOM file follows this order:
+/// 1. Header record (HEAD) - file metadata and configuration
+/// 2. Data records (SUBM, SUBN, INDI, FAM, REPO, SOUR, OBJE) - genealogical data
+/// 3. Trailer record (TRLR) - end-of-file marker
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct GedcomData {
@@ -317,5 +275,60 @@ impl Parser for GedcomData {
                 tokenizer.next_token();
             };
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_minimal_document() {
+        let sample = "\
+           0 HEAD\n\
+           1 GEDC\n\
+           2 VERS 5.5\n\
+           0 TRLR";
+
+        let mut doc = GedcomDocument::new(sample.chars());
+        let data = doc.parse_document();
+
+        let head = data.header.unwrap();
+        let gedc = head.gedcom.unwrap();
+        assert_eq!(gedc.version.unwrap(), "5.5");
+    }
+
+    #[test]
+    fn test_parse_all_record_types() {
+        let sample = "\
+            0 HEAD\n\
+            1 GEDC\n\
+            2 VERS 5.5\n\
+            0 @SUBMITTER@ SUBM\n\
+            0 @PERSON1@ INDI\n\
+            0 @FAMILY1@ FAM\n\
+            0 @R1@ REPO\n\
+            0 @SOURCE1@ SOUR\n\
+            0 @MEDIA1@ OBJE\n\
+            0 _MYOWNTAG This is a non-standard tag. Not recommended but allowed\n\
+            0 TRLR";
+
+        let mut doc = GedcomDocument::new(sample.chars());
+        let data = doc.parse_document();
+
+        assert_eq!(data.submitters.len(), 1);
+        assert_eq!(data.submitters[0].xref.as_ref().unwrap(), "@SUBMITTER@");
+
+        assert_eq!(data.individuals.len(), 1);
+        assert_eq!(data.individuals[0].xref.as_ref().unwrap(), "@PERSON1@");
+
+        assert_eq!(data.families.len(), 1);
+        assert_eq!(data.families[0].xref.as_ref().unwrap(), "@FAMILY1@");
+
+        assert_eq!(data.repositories.len(), 1);
+        assert_eq!(data.repositories[0].xref.as_ref().unwrap(), "@R1@");
+
+        assert_eq!(data.sources.len(), 1);
+        assert_eq!(data.sources[0].xref.as_ref().unwrap(), "@SOURCE1@");
     }
 }
