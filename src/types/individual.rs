@@ -15,29 +15,6 @@ use serde::{Deserialize, Serialize};
 /// individual. These facts may come from multiple sources. Source citations and notes allow
 /// documentation of the source where each of the facts were discovered. See
 /// https://gedcom.io/specifications/FamilySearchGEDCOMv7.html#INDIVIDUAL_RECORD.
-///
-/// # Example
-///
-/// ```
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///    0 HEAD\n\
-///    1 GEDC\n\
-///    2 VERS 5.5\n\
-///    0 @PERSON1@ INDI\n\
-///    1 NAME John Doe\n\
-///    1 SEX M\n\
-///    0 TRLR";
-///
-/// let mut doc = GedcomDocument::new(sample.chars());
-/// let data = doc.parse_document();
-///
-/// let indi = &data.individuals[0];
-/// assert_eq!(indi.xref.as_ref().unwrap(), "@PERSON1@");
-/// assert_eq!(indi.name.as_ref().unwrap().value.as_ref().unwrap(), "John Doe");
-/// assert_eq!(indi.sex.as_ref().unwrap().value.to_string(), "Male");
-/// ```
-///
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct Individual {
@@ -160,34 +137,6 @@ impl ToString for GenderType {
 /// Related concepts of gender identity or sexual preference are not currently given their own tag.
 /// Cultural or personal gender preference may be indicated using the FACT tag. See
 /// https://gedcom.io/specifications/FamilySearchGEDCOMv7.html#SEX
-///
-/// # Example
-///
-/// ```rust
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///     0 HEAD\n\
-///     1 GEDC\n\
-///     2 VERS 5.5\n\
-///     0 @PERSON1@ INDI\n\
-///     1 SEX M
-///     2 FACT A fact about an individual's gen
-///     3 CONC der
-///     2 SOUR @CITATION1@
-///     3 PAGE Page
-///     4 CONC : 132
-///     3 _MYOWNTAG This is a non-standard tag. Not recommended but allowed
-///     0 TRLR";
-///
-/// let mut doc = GedcomDocument::new(sample.chars());
-/// let data = doc.parse_document();
-///
-/// let sex = data.individuals[0].sex.as_ref().unwrap();
-/// assert_eq!(sex.value.to_string(), "Male");
-/// assert_eq!(sex.fact.as_ref().unwrap(), "A fact about an individual's gender");
-/// assert_eq!(sex.sources[0].xref, "@CITATION1@");
-/// assert_eq!(sex.sources[0].page.as_ref().unwrap(), "Page: 132");
-/// ```
 #[derive(Debug)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct Gender {
@@ -325,36 +274,6 @@ impl ToString for AdoptedByWhichParent {
 /// to a family through either the FAMC tag or the FAMS tag. The FAMC tag provides a pointer to a
 /// family where this person is a child. The FAMS tag provides a pointer to a family where this
 /// person is a spouse or parent. See GEDCOM 5.5 spec, page 26.
-///
-/// # Example
-///
-/// ```
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///    0 HEAD\n\
-///    1 GEDC\n\
-///    2 VERS 5.5\n\
-///    0 @PERSON1@ INDI\n\
-///    1 NAME given name\n\
-///    1 SEX M\n\
-///    1 ADOP\n\
-///    2 DATE CAL 31 DEC 1897\n\
-///    2 FAMC @ADOPTIVE_PARENTS@\n\
-///    3 PEDI adopted
-///    3 ADOP BOTH\n\
-///    3 STAT proven
-///    0 TRLR";
-///
-/// let mut doc = GedcomDocument::new(sample.chars());
-/// let data = doc.parse_document();
-///
-/// let famc = data.individuals[0].events[0].family_link.as_ref().unwrap();
-/// assert_eq!(famc.xref, "@ADOPTIVE_PARENTS@");
-/// assert_eq!(famc.family_link_type.to_string(), "Child");
-/// assert_eq!(famc.pedigree_linkage_type.as_ref().unwrap().to_string(), "Adopted");
-/// assert_eq!(famc.child_linkage_status.as_ref().unwrap().to_string(), "Proven");
-/// assert_eq!(famc.adopted_by.as_ref().unwrap().to_string(), "Both");
-/// ```
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct FamilyLink {
@@ -448,27 +367,6 @@ impl Parser for FamilyLink {
 /// payload in some form, possibly adjusted for gender-specific suffixes or the like. It is
 /// permitted for the payload to contain information not present in any name piece substructure.
 /// See https://gedcom.io/specifications/FamilySearchGEDCOMv7.html#PERSONAL_NAME_STRUCTURE
-///
-/// # Example
-///
-/// ```
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///    0 HEAD\n\
-///    1 GEDC\n\
-///    2 VERS 5.5\n\
-///    0 @PERSON1@ INDI\n\
-///    1 NAME John Doe\n\
-///    0 TRLR";
-///
-/// let mut doc = GedcomDocument::new(sample.chars());
-/// let data = doc.parse_document();
-///
-/// let indi = &data.individuals[0];
-/// assert_eq!(indi.xref.as_ref().unwrap(), "@PERSON1@");
-/// assert_eq!(indi.name.as_ref().unwrap().value.as_ref().unwrap(), "John Doe");
-/// ```
-///
 #[derive(Debug)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct Name {
@@ -558,53 +456,6 @@ impl ToString for IndividualAttribute {
 /// and/or address, etc. to be transmitted, just as the events are. Previous versions, which
 /// handled just a tag and value, can be read as usual by handling the subordinate attribute detail
 /// as an exception. . See GEDCOM 5.5 spec, page 69.
-///
-/// # Example
-///
-/// ```rust
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///    0 HEAD\n\
-///    1 GEDC\n\
-///    2 VERS 5.5\n\
-///    0 @PERSON1@ INDI\n\
-///    1 DSCR Physical description\n\
-///    2 DATE 31 DEC 1997\n\
-///    2 PLAC The place\n\
-///    2 SOUR @SOURCE1@\n\
-///    3 PAGE 42\n\
-///    3 DATA\n\
-///    4 DATE 31 DEC 1900\n\
-///    4 TEXT a sample text\n\
-///    5 CONT Sample text continued here. The word TE\n\
-///    5 CONC ST should not be broken!\n\
-///    3 QUAY 3\n\
-///    3 NOTE A note\n\
-///    4 CONT Note continued here. The word TE\n\
-///    4 CONC ST should not be broken!\n\
-///    2 NOTE PHY_DESCRIPTION event note (the physical characteristics of a person, place, or thing)\n\
-///    3 CONT Note continued here. The word TE\n\
-///    3 CONC ST should not be broken!\n\
-///    0 TRLR";
-///
-/// let mut doc = GedcomDocument::new(sample.chars());
-/// let data = doc.parse_document();
-///
-/// assert_eq!(data.individuals.len(), 1);
-///
-/// let attr = &data.individuals[0].attributes[0];
-/// assert_eq!(attr.attribute.to_string(), "PhysicalDescription");
-/// assert_eq!(attr.value.as_ref().unwrap(), "Physical description");
-/// assert_eq!(attr.date.as_ref().unwrap().value.as_ref().unwrap(), "31 DEC 1997");
-/// assert_eq!(attr.place.as_ref().unwrap(), "The place");
-///
-/// let a_sour = &data.individuals[0].attributes[0].sources[0];
-/// assert_eq!(a_sour.page.as_ref().unwrap(), "42");
-/// assert_eq!(a_sour.data.as_ref().unwrap().date.as_ref().unwrap().value.as_ref().unwrap(), "31 DEC 1900");
-/// assert_eq!(a_sour.data.as_ref().unwrap().text.as_ref().unwrap().value.as_ref().unwrap(), "a sample text\nSample text continued here. The word TEST should not be broken!");
-/// assert_eq!(a_sour.certainty_assessment.as_ref().unwrap().to_string(), "Direct");
-/// assert_eq!(a_sour.note.as_ref().unwrap().value.as_ref().unwrap(), "A note\nNote continued here. The word TEST should not be broken!");
-/// ```
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct AttributeDetail {
@@ -689,5 +540,195 @@ impl Parser for AttributeDetail {
         if &value != "" {
             self.value = Some(value);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::GedcomDocument;
+
+    #[test]
+    fn test_parse_individual_record() {
+        let sample = "\
+           0 HEAD\n\
+           1 GEDC\n\
+           2 VERS 5.5\n\
+           0 @PERSON1@ INDI\n\
+           1 NAME John Doe\n\
+           1 SEX M\n\
+           0 TRLR";
+
+        let mut doc = GedcomDocument::new(sample.chars());
+        let data = doc.parse_document();
+
+        let indi = &data.individuals[0];
+        assert_eq!(indi.xref.as_ref().unwrap(), "@PERSON1@");
+        assert_eq!(
+            indi.name.as_ref().unwrap().value.as_ref().unwrap(),
+            "John Doe"
+        );
+        assert_eq!(indi.sex.as_ref().unwrap().value.to_string(), "Male");
+    }
+
+    #[test]
+    fn test_parse_gender_record() {
+        let sample = "\
+            0 HEAD\n\
+            1 GEDC\n\
+            2 VERS 5.5\n\
+            0 @PERSON1@ INDI\n\
+            1 SEX M
+            2 FACT A fact about an individual's gen
+            3 CONC der
+            2 SOUR @CITATION1@
+            3 PAGE Page
+            4 CONC : 132
+            3 _MYOWNTAG This is a non-standard tag. Not recommended but allowed
+            0 TRLR";
+
+        let mut doc = GedcomDocument::new(sample.chars());
+        let data = doc.parse_document();
+
+        let sex = data.individuals[0].sex.as_ref().unwrap();
+        assert_eq!(sex.value.to_string(), "Male");
+        assert_eq!(
+            sex.fact.as_ref().unwrap(),
+            "A fact about an individual's gender"
+        );
+        assert_eq!(sex.sources[0].xref, "@CITATION1@");
+        assert_eq!(sex.sources[0].page.as_ref().unwrap(), "Page: 132");
+    }
+
+    #[test]
+    fn test_parse_family_link_record() {
+        let sample = "\
+           0 HEAD\n\
+           1 GEDC\n\
+           2 VERS 5.5\n\
+           0 @PERSON1@ INDI\n\
+           1 NAME given name\n\
+           1 SEX M\n\
+           1 ADOP\n\
+           2 DATE CAL 31 DEC 1897\n\
+           2 FAMC @ADOPTIVE_PARENTS@\n\
+           3 PEDI adopted
+           3 ADOP BOTH\n\
+           3 STAT proven
+           0 TRLR";
+
+        let mut doc = GedcomDocument::new(sample.chars());
+        let data = doc.parse_document();
+
+        let famc = data.individuals[0].events[0].family_link.as_ref().unwrap();
+        assert_eq!(famc.xref, "@ADOPTIVE_PARENTS@");
+        assert_eq!(famc.family_link_type.to_string(), "Child");
+        assert_eq!(
+            famc.pedigree_linkage_type.as_ref().unwrap().to_string(),
+            "Adopted"
+        );
+        assert_eq!(
+            famc.child_linkage_status.as_ref().unwrap().to_string(),
+            "Proven"
+        );
+        assert_eq!(famc.adopted_by.as_ref().unwrap().to_string(), "Both");
+    }
+
+    #[test]
+    fn test_parse_name_record() {
+        let sample = "\
+           0 HEAD\n\
+           1 GEDC\n\
+           2 VERS 5.5\n\
+           0 @PERSON1@ INDI\n\
+           1 NAME John Doe\n\
+           0 TRLR";
+
+        let mut doc = GedcomDocument::new(sample.chars());
+        let data = doc.parse_document();
+
+        let indi = &data.individuals[0];
+        assert_eq!(indi.xref.as_ref().unwrap(), "@PERSON1@");
+        assert_eq!(
+            indi.name.as_ref().unwrap().value.as_ref().unwrap(),
+            "John Doe"
+        );
+    }
+
+    #[test]
+    fn test_parse_attribute_detail_record() {
+        let sample = "\
+           0 HEAD\n\
+           1 GEDC\n\
+           2 VERS 5.5\n\
+           0 @PERSON1@ INDI\n\
+           1 DSCR Physical description\n\
+           2 DATE 31 DEC 1997\n\
+           2 PLAC The place\n\
+           2 SOUR @SOURCE1@\n\
+           3 PAGE 42\n\
+           3 DATA\n\
+           4 DATE 31 DEC 1900\n\
+           4 TEXT a sample text\n\
+           5 CONT Sample text continued here. The word TE\n\
+           5 CONC ST should not be broken!\n\
+           3 QUAY 3\n\
+           3 NOTE A note\n\
+           4 CONT Note continued here. The word TE\n\
+           4 CONC ST should not be broken!\n\
+           2 NOTE PHY_DESCRIPTION event note (the physical characteristics of a person, place, or thing)\n\
+           3 CONT Note continued here. The word TE\n\
+           3 CONC ST should not be broken!\n\
+           0 TRLR";
+
+        let mut doc = GedcomDocument::new(sample.chars());
+        let data = doc.parse_document();
+
+        assert_eq!(data.individuals.len(), 1);
+
+        let attr = &data.individuals[0].attributes[0];
+        assert_eq!(attr.attribute.to_string(), "PhysicalDescription");
+        assert_eq!(attr.value.as_ref().unwrap(), "Physical description");
+        assert_eq!(
+            attr.date.as_ref().unwrap().value.as_ref().unwrap(),
+            "31 DEC 1997"
+        );
+        assert_eq!(attr.place.as_ref().unwrap(), "The place");
+
+        let a_sour = &data.individuals[0].attributes[0].sources[0];
+        assert_eq!(a_sour.page.as_ref().unwrap(), "42");
+        assert_eq!(
+            a_sour
+                .data
+                .as_ref()
+                .unwrap()
+                .date
+                .as_ref()
+                .unwrap()
+                .value
+                .as_ref()
+                .unwrap(),
+            "31 DEC 1900"
+        );
+        assert_eq!(
+            a_sour
+                .data
+                .as_ref()
+                .unwrap()
+                .text
+                .as_ref()
+                .unwrap()
+                .value
+                .as_ref()
+                .unwrap(),
+            "a sample text\nSample text continued here. The word TEST should not be broken!"
+        );
+        assert_eq!(
+            a_sour.certainty_assessment.as_ref().unwrap().to_string(),
+            "Direct"
+        );
+        assert_eq!(
+            a_sour.note.as_ref().unwrap().value.as_ref().unwrap(),
+            "A note\nNote continued here. The word TEST should not be broken!"
+        );
     }
 }
