@@ -107,27 +107,6 @@ impl SourceData {
 
 /// The data provided in the `SourceCitation` structure is source-related information specific to
 /// the data being cited. (See GEDCOM 5.5 Specification page 39.)
-///
-/// # Example
-///
-/// ```
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///     0 HEAD\n\
-///     1 GEDC\n\
-///     2 VERS 5.5\n\
-///     2 FORM LINEAGE-LINKED\n\
-///     0 @PERSON1@ INDI\n\
-///     1 SOUR @SOURCE1@\n\
-///     2 PAGE 42\n\
-///     0 TRLR";
-///
-/// let mut ged = GedcomDocument::new(sample.chars());
-/// let data = ged.parse_document();
-///
-/// assert_eq!(data.individuals[0].source[0].xref, "@SOURCE1@");
-/// assert_eq!(data.individuals[0].source[0].page.as_ref().unwrap(), "42");
-/// ```
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct SourceCitation {
@@ -200,32 +179,6 @@ impl Parser for SourceCitation {
 /// Actual text from the source that was used in making assertions, for example a date phrase as
 /// actually recorded in the source, or significant notes written by the recorder, or an applicable
 /// sentence from a letter. This is stored in the SOUR.DATA.TEXT context.
-///
-/// # Example
-///
-/// ```
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///     0 HEAD\n\
-///     1 GEDC\n\
-///     2 VERS 5.5\n\
-///     2 FORM LINEAGE-LINKED\n\
-///     0 @PERSON1@ INDI\n\
-///     1 SOUR @SOURCE1@\n\
-///     2 PAGE 42\n\
-///     2 DATA\n\
-///     3 DATE BEF 1 JAN 1900\n\
-///     0 TRLR";
-///
-/// let mut ged = GedcomDocument::new(sample.chars());
-/// let data = ged.parse_document();
-/// let citation_data = data.individuals[0].source[0].data.as_ref().unwrap();
-///
-/// assert_eq!(
-///     citation_data.date.as_ref().unwrap().value.as_ref().unwrap(),
-///     "BEF 1 JAN 1900"
-/// );
-/// ```
 #[derive(Clone, Debug, Default)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct SourceCitationData {
@@ -266,35 +219,6 @@ impl Parser for SourceCitationData {
 /// source. This should be, from the evidence point of view, "what the original record keeper said"
 /// as opposed to the researcher's interpretation. The word TEXT, in this case, means from the text
 /// which appeared in the source record including labels.
-///
-/// # Example
-///
-/// ```
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///     0 HEAD\n\
-///     1 GEDC\n\
-///     2 VERS 5.5\n\
-///     2 FORM LINEAGE-LINKED\n\
-///     0 @PERSON1@ INDI\n\
-///     1 SOUR @SOURCE1@\n\
-///     2 PAGE 42\n\
-///     2 DATA\n\
-///     3 DATE BEF 1 JAN 1900\n\
-///     3 TEXT a sample text\n\
-///     4 CONT Sample text continued here. The word TE\n\
-///     4 CONC ST should not be broken!\n\
-///     0 TRLR";
-///
-/// let mut ged = GedcomDocument::new(sample.chars());
-/// let data = ged.parse_document();
-/// let citation_data = data.individuals[0].source[0].data.as_ref().unwrap();
-///
-/// assert_eq!(
-///     citation_data.text.as_ref().unwrap().value.as_ref().unwrap(),
-///     "a sample text\nSample text continued here. The word TEST should not be broken!"
-/// );
-/// ```
 #[derive(Clone, Debug, Default)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct TextFromSource {
@@ -343,31 +267,6 @@ impl Parser for TextFromSource {
 /// 1 = Questionable reliability of evidence (interviews, census, oral genealogies, or potential for bias for example, an autobiography)
 /// 2 = Secondary evidence, data officially recorded sometime after event
 /// 3 = Direct and primary evidence used, or by dominance of the evidence
-///
-/// # Example
-///
-/// ```
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///     0 HEAD\n\
-///     1 GEDC\n\
-///     2 VERS 5.5\n\
-///     2 FORM LINEAGE-LINKED\n\
-///     0 @PERSON1@ INDI\n\
-///     1 SOUR @SOURCE1@\n\
-///     2 PAGE 42\n\
-///     2 QUAY 1\n\
-///     0 TRLR";
-///
-/// let mut ged = GedcomDocument::new(sample.chars());
-/// let data = ged.parse_document();
-/// let quay = data.individuals[0].source[0].certainty_assessment.as_ref().unwrap();
-///
-/// assert_eq!(
-///     quay.get_int().unwrap(),
-///     1
-/// );
-/// ```
 #[derive(Clone, Debug)]
 pub enum CertaintyAssessment {
     Unreliable,
@@ -425,5 +324,102 @@ impl Parser for CertaintyAssessment {
             );
         }
         tokenizer.next_token();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::GedcomDocument;
+
+    #[test]
+    fn test_parse_source_citation_record() {
+        let sample = "\
+            0 HEAD\n\
+            1 GEDC\n\
+            2 VERS 5.5\n\
+            2 FORM LINEAGE-LINKED\n\
+            0 @PERSON1@ INDI\n\
+            1 SOUR @SOURCE1@\n\
+            2 PAGE 42\n\
+            0 TRLR";
+
+        let mut ged = GedcomDocument::new(sample.chars());
+        let data = ged.parse_document();
+
+        assert_eq!(data.individuals[0].source[0].xref, "@SOURCE1@");
+        assert_eq!(data.individuals[0].source[0].page.as_ref().unwrap(), "42");
+    }
+    #[test]
+    fn test_parse_source_citation_data_record() {
+        let sample = "\
+            0 HEAD\n\
+            1 GEDC\n\
+            2 VERS 5.5\n\
+            2 FORM LINEAGE-LINKED\n\
+            0 @PERSON1@ INDI\n\
+            1 SOUR @SOURCE1@\n\
+            2 PAGE 42\n\
+            2 DATA\n\
+            3 DATE BEF 1 JAN 1900\n\
+            0 TRLR";
+
+        let mut ged = GedcomDocument::new(sample.chars());
+        let data = ged.parse_document();
+        let citation_data = data.individuals[0].source[0].data.as_ref().unwrap();
+
+        assert_eq!(
+            citation_data.date.as_ref().unwrap().value.as_ref().unwrap(),
+            "BEF 1 JAN 1900"
+        );
+    }
+
+    #[test]
+    fn test_parse_text_from_source_record() {
+        let sample = "\
+            0 HEAD\n\
+            1 GEDC\n\
+            2 VERS 5.5\n\
+            2 FORM LINEAGE-LINKED\n\
+            0 @PERSON1@ INDI\n\
+            1 SOUR @SOURCE1@\n\
+            2 PAGE 42\n\
+            2 DATA\n\
+            3 DATE BEF 1 JAN 1900\n\
+            3 TEXT a sample text\n\
+            4 CONT Sample text continued here. The word TE\n\
+            4 CONC ST should not be broken!\n\
+            0 TRLR";
+
+        let mut ged = GedcomDocument::new(sample.chars());
+        let data = ged.parse_document();
+        let citation_data = data.individuals[0].source[0].data.as_ref().unwrap();
+
+        assert_eq!(
+            citation_data.text.as_ref().unwrap().value.as_ref().unwrap(),
+            "a sample text\nSample text continued here. The word TEST should not be broken!"
+        );
+    }
+
+    #[test]
+    fn test_parse_certainty_assessment_record() {
+        let sample = "\
+            0 HEAD\n\
+            1 GEDC\n\
+            2 VERS 5.5\n\
+            2 FORM LINEAGE-LINKED\n\
+            0 @PERSON1@ INDI\n\
+            1 SOUR @SOURCE1@\n\
+            2 PAGE 42\n\
+            2 QUAY 1\n\
+            0 TRLR";
+
+        let mut ged = GedcomDocument::new(sample.chars());
+        let data = ged.parse_document();
+        let quay = data.individuals[0].source[0]
+            .certainty_assessment
+            .as_ref()
+            .unwrap();
+
+        assert_eq!(quay.get_int().unwrap(), 1);
     }
 }
