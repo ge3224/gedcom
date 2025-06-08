@@ -11,41 +11,6 @@ use super::UserDefinedTag;
 
 /// Header (tag: HEAD) containing GEDCOM metadata.
 /// See https://gedcom.io/specifications/FamilySearchGEDCOMv7.html#HEADER
-///
-/// # Example
-///
-/// ```rust
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///     0 HEAD\n\
-///     1 GEDC\n\
-///     2 VERS 5.5\n\
-///     1 DEST Destination of transmission\n\
-///     1 SUBM @SUBMITTER@\n\
-///     1 SUBN @SUBMISSION@\n\
-///     1 FILE ALLGED.GED\n\
-///     1 LANG language\n\
-///     0 TRLR";
-///
-/// let mut doc = GedcomDocument::new(sample.chars());
-/// let data = doc.parse_document();
-/// let header = data.header.unwrap();
-///
-/// let dest = header.destination.unwrap();
-/// assert_eq!(dest, "Destination of transmission");
-///
-/// let subn = header.submitter_tag.unwrap();
-/// assert_eq!(subn, "@SUBMITTER@");
-///
-/// let subm = header.submission_tag.unwrap();
-/// assert_eq!(subm, "@SUBMISSION@");
-///
-/// let lang = header.language.unwrap();
-/// assert_eq!(lang.as_str(), "language");
-///
-/// let file = header.filename.unwrap();
-/// assert_eq!(file, "ALLGED.GED");
-/// ```
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct Header {
@@ -119,25 +84,6 @@ impl Parser for Header {
 /// GedcomMeta (tag: GEDC) is a container for information about the entire document. It is
 /// recommended that applications write GEDC with its required subrecord VERS as the first
 /// substructure of a HEAD. See https://gedcom.io/specifications/FamilySearchGEDCOMv7.html#GEDC
-///
-/// # Example
-///
-/// ```
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///     0 HEAD\n\
-///     1 GEDC\n\
-///     2 VERS 5.5\n\
-///     2 FORM LINEAGE-LINKED\n\
-///     0 TRLR";
-///
-/// let mut ged = GedcomDocument::new(sample.chars());
-/// let data = ged.parse_document();
-///
-/// let head_gedc = data.header.unwrap().gedcom.unwrap();
-/// assert_eq!(head_gedc.version.unwrap(), "5.5");
-/// assert_eq!(head_gedc.form.unwrap(), "LINEAGE-LINKED");
-/// ```
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct GedcomMeta {
@@ -183,29 +129,6 @@ impl Parser for GedcomMeta {
 
 /// Encoding (tag: CHAR) is a code value that represents the character set to be used to
 /// interpret this data. See Gedcom 5.5.1 specification, p. 44
-///
-/// # Example
-///
-/// ```
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///     0 HEAD\n\
-///     1 GEDC\n\
-///     2 VERS 5.5\n\
-///     1 CHAR ASCII\n\
-///     2 VERS Version number of ASCII (whatever it means)\n\
-///     0 TRLR";
-
-/// let mut doc = GedcomDocument::new(sample.chars());
-/// let data = doc.parse_document();
-
-/// let h_char = data.header.unwrap().encoding.unwrap();
-/// assert_eq!(h_char.value.unwrap(), "ASCII");
-/// assert_eq!(
-///     h_char.version.unwrap(),
-///     "Version number of ASCII (whatever it means)"
-/// );
-/// ```
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct Encoding {
@@ -240,32 +163,6 @@ impl Parser for Encoding {
 /// registration process for these identifiers existed for a time, but no longer does. If an
 /// existing identifier is known, it should be used. Otherwise, a URI owned by the product should
 /// be used instead. See https://gedcom.io/specifications/FamilySearchGEDCOMv7.html#HEAD-SOUR
-///
-/// # Example
-///
-/// ```
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///     0 HEAD\n\
-///     1 GEDC\n\
-///     2 VERS 5.5\n\
-///     1 SOUR SOURCE_NAME\n\
-///     2 VERS Version number of source-program\n\
-///     2 NAME Name of source-program\n\
-///     0 TRLR";
-///
-/// let mut doc = GedcomDocument::new(sample.chars());
-/// let data = doc.parse_document();
-///
-/// let sour = data.header.unwrap().source.unwrap();
-/// assert_eq!(sour.value.unwrap(), "SOURCE_NAME");
-///
-/// let vers = sour.version.unwrap();
-/// assert_eq!(vers, "Version number of source-program");
-///
-/// let name = sour.name.unwrap();
-/// assert_eq!(name, "Name of source-program");
-/// ```
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct HeadSour {
@@ -308,35 +205,6 @@ impl Parser for HeadSour {
 /// The electronic data source or digital repository from which this dataset was exported. The
 /// payload is the name of that source, with substructures providing additional details about the
 /// source (not the export). See https://gedcom.io/specifications/FamilySearchGEDCOMv7.html#HEAD-SOUR-DATA
-///
-/// # Example
-///
-/// ```
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///     0 HEAD\n\
-///     1 GEDC\n\
-///     2 VERS 5.5\n\
-///     1 SOUR SOURCE_NAME\n\
-///     2 DATA Name of source data\n\
-///     3 DATE 1 JAN 1998\n\
-///     3 COPR Copyright of source data\n\
-///     0 TRLR";
-///
-/// let mut doc = GedcomDocument::new(sample.chars());
-/// let data = doc.parse_document();
-///
-/// let sour = data.header.unwrap().source.unwrap();
-/// assert_eq!(sour.value.unwrap(), "SOURCE_NAME");
-///
-/// let sour_data = sour.data.unwrap();
-/// assert_eq!(sour_data.value.unwrap(), "Name of source data");
-/// assert_eq!(sour_data.date.unwrap().value.unwrap(), "1 JAN 1998");
-/// assert_eq!(
-///     sour_data.copyright.unwrap(),
-///     "Copyright of source data"
-/// );
-/// ```
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct HeadSourData {
@@ -376,28 +244,6 @@ impl Parser for HeadSourData {
 
 /// HeadPlace (tag: PLAC) is is a placeholder for providing a default PLAC.FORM, and must not have
 /// a payload. See https://gedcom.io/specifications/FamilySearchGEDCOMv7.html#HEAD-PLAC
-///
-/// # Example
-///
-/// ```
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///     0 HEAD\n\
-///     1 GEDC\n\
-///     2 VERS 5.5\n\
-///     1 PLAC\n\
-///     2 FORM City, County, State, Country\n\
-///     0 TRLR";
-///
-/// let mut doc = GedcomDocument::new(sample.chars());
-/// let data = doc.parse_document();
-///
-/// let h_plac = data.header.unwrap().place.unwrap();
-/// assert_eq!(h_plac.form[0], "City");
-/// assert_eq!(h_plac.form[1], "County");
-/// assert_eq!(h_plac.form[2], "State");
-/// assert_eq!(h_plac.form[3], "Country");
-/// ```
 #[derive(Debug, Default)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct HeadPlac {
@@ -457,5 +303,149 @@ impl Parser for HeadPlac {
             ),
         };
         parse_subset(tokenizer, level, handle_subset);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::GedcomDocument;
+
+    #[test]
+    fn test_parse_header_record() {
+        let sample = "\
+            0 HEAD\n\
+            1 GEDC\n\
+            2 VERS 5.5\n\
+            1 DEST Destination of transmission\n\
+            1 SUBM @SUBMITTER@\n\
+            1 SUBN @SUBMISSION@\n\
+            1 FILE ALLGED.GED\n\
+            1 LANG language\n\
+            0 TRLR";
+
+        let mut doc = GedcomDocument::new(sample.chars());
+        let data = doc.parse_document();
+        let header = data.header.unwrap();
+
+        let dest = header.destination.unwrap();
+        assert_eq!(dest, "Destination of transmission");
+
+        let subn = header.submitter_tag.unwrap();
+        assert_eq!(subn, "@SUBMITTER@");
+
+        let subm = header.submission_tag.unwrap();
+        assert_eq!(subm, "@SUBMISSION@");
+
+        let lang = header.language.unwrap();
+        assert_eq!(lang.as_str(), "language");
+
+        let file = header.filename.unwrap();
+        assert_eq!(file, "ALLGED.GED");
+    }
+
+    #[test]
+    fn test_parse_gedcom_meta_record() {
+        let sample = "\
+            0 HEAD\n\
+            1 GEDC\n\
+            2 VERS 5.5\n\
+            2 FORM LINEAGE-LINKED\n\
+            0 TRLR";
+
+        let mut ged = GedcomDocument::new(sample.chars());
+        let data = ged.parse_document();
+
+        let head_gedc = data.header.unwrap().gedcom.unwrap();
+        assert_eq!(head_gedc.version.unwrap(), "5.5");
+        assert_eq!(head_gedc.form.unwrap(), "LINEAGE-LINKED");
+    }
+
+    #[test]
+    fn test_parse_encoding_record() {
+        let sample = "\
+            0 HEAD\n\
+            1 GEDC\n\
+            2 VERS 5.5\n\
+            1 CHAR ASCII\n\
+            2 VERS Version number of ASCII (whatever it means)\n\
+            0 TRLR";
+
+        let mut doc = GedcomDocument::new(sample.chars());
+        let data = doc.parse_document();
+
+        let h_char = data.header.unwrap().encoding.unwrap();
+        assert_eq!(h_char.value.unwrap(), "ASCII");
+        assert_eq!(
+            h_char.version.unwrap(),
+            "Version number of ASCII (whatever it means)"
+        );
+    }
+
+    #[test]
+    fn test_parse_header_source_record() {
+        let sample = "\
+            0 HEAD\n\
+            1 GEDC\n\
+            2 VERS 5.5\n\
+            1 SOUR SOURCE_NAME\n\
+            2 VERS Version number of source-program\n\
+            2 NAME Name of source-program\n\
+            0 TRLR";
+
+        let mut doc = GedcomDocument::new(sample.chars());
+        let data = doc.parse_document();
+
+        let sour = data.header.unwrap().source.unwrap();
+        assert_eq!(sour.value.unwrap(), "SOURCE_NAME");
+
+        let vers = sour.version.unwrap();
+        assert_eq!(vers, "Version number of source-program");
+
+        let name = sour.name.unwrap();
+        assert_eq!(name, "Name of source-program");
+    }
+
+    #[test]
+    fn test_parse_header_source_data_record() {
+        let sample = "\
+            0 HEAD\n\
+            1 GEDC\n\
+            2 VERS 5.5\n\
+            1 SOUR SOURCE_NAME\n\
+            2 DATA Name of source data\n\
+            3 DATE 1 JAN 1998\n\
+            3 COPR Copyright of source data\n\
+            0 TRLR";
+
+        let mut doc = GedcomDocument::new(sample.chars());
+        let data = doc.parse_document();
+
+        let sour = data.header.unwrap().source.unwrap();
+        assert_eq!(sour.value.unwrap(), "SOURCE_NAME");
+
+        let sour_data = sour.data.unwrap();
+        assert_eq!(sour_data.value.unwrap(), "Name of source data");
+        assert_eq!(sour_data.date.unwrap().value.unwrap(), "1 JAN 1998");
+        assert_eq!(sour_data.copyright.unwrap(), "Copyright of source data");
+    }
+
+    #[test]
+    fn test_parse_header_place_record() {
+        let sample = "\
+            0 HEAD\n\
+            1 GEDC\n\
+            2 VERS 5.5\n\
+            1 PLAC\n\
+            2 FORM City, County, State, Country\n\
+            0 TRLR";
+
+        let mut doc = GedcomDocument::new(sample.chars());
+        let data = doc.parse_document();
+
+        let h_plac = data.header.unwrap().place.unwrap();
+        assert_eq!(h_plac.form[0], "City");
+        assert_eq!(h_plac.form[1], "County");
+        assert_eq!(h_plac.form[2], "State");
+        assert_eq!(h_plac.form[3], "Country");
     }
 }
