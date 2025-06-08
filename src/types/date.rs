@@ -1,46 +1,9 @@
-use crate::{
-    parse_subset,
-    tokenizer::Tokenizer,
-    types::Note,
-    Parser,
-};
+use crate::{parse_subset, tokenizer::Tokenizer, types::Note, Parser};
 
 #[cfg(feature = "json")]
 use serde::{Deserialize, Serialize};
 
 /// Date encompasses a number of date formats, e.g. approximated, period, phrase and range.
-///
-/// # Example
-///
-/// ```rust
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///     0 HEAD\n\
-///     1 GEDC\n\
-///     2 VERS 5.5\n\
-///     1 DATE 2 Oct 2019
-///     2 TIME 0:00:00
-///     0 @I1@ INDI
-///     1 NAME Ancestor
-///     1 BIRT
-///     2 DATE BEF 1828
-///     1 RESI
-///     2 PLAC 100 Broadway, New York, NY 10005
-///     2 DATE from 1900 to 1905
-///     0 TRLR";
-///
-/// let mut doc = GedcomDocument::new(sample.chars());
-/// let data = doc.parse_document();
-///
-/// let head_date = data.header.unwrap().date.unwrap();
-/// assert_eq!(head_date.value.unwrap(), "2 Oct 2019");
-///
-/// let birt_date = data.individuals[0].events[0].date.as_ref().unwrap();
-/// assert_eq!(birt_date.value.as_ref().unwrap(), "BEF 1828");
-///
-/// let resi_date = data.individuals[0].events[1].date.as_ref().unwrap();
-/// assert_eq!(resi_date.value.as_ref().unwrap(), "from 1900 to 1905");
-/// ```
 #[derive(Clone, Debug, Default)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct Date {
@@ -84,40 +47,21 @@ impl Parser for Date {
     }
 }
 
-/// ChangeDate is intended to only record the last change to a record. Some systems may want to
-/// manage the change process with more detail, but it is sufficient for GEDCOM purposes to
-/// indicate the last time that a record was modified.
+/// Represents a GEDCOM CHANGE_DATE structure (`CHAN` tag).
 ///
-/// # Example
-/// ```
-/// use gedcom::GedcomDocument;
-/// let sample = "\
-///     0 HEAD\n\
-///     1 GEDC\n\
-///     2 VERS 5.5\n\
-///     2 FORM LINEAGE-LINKED\n\
-///     0 @MEDIA1@ OBJE\n\
-///     1 FILE /home/user/media/file_name.bmp\n\
-///     1 CHAN
-///     2 DATE 1 APR 1998
-///     3 TIME 12:34:56.789
-///     2 NOTE A note
-///     0 TRLR";
+/// This structure is used to record the last modification date of a record within the GEDCOM file.
 ///
-/// let mut doc = GedcomDocument::new(sample.chars());
-/// let data = doc.parse_document();
-/// assert_eq!(data.multimedia.len(), 1);
+/// As per the GEDCOM 5.5.1 specification, its purpose is simply to indicate when a record was last
+/// modified, rather than tracking a detailed history of changes. While some genealogy software
+/// might manage changes with more granularity internally, for GEDCOM export/import, only the most
+/// recent change date is recorded here.
 ///
-/// let obje = &data.multimedia[0];
+/// It can optionally include a `TIME_VALUE` and `NOTE_STRUCTURE` for additional context.
 ///
-/// let chan = obje.change_date.as_ref().unwrap();
-/// let date = chan.date.as_ref().unwrap();
-/// assert_eq!(date.value.as_ref().unwrap(), "1 APR 1998");
-/// assert_eq!(date.time.as_ref().unwrap(), "12:34:56.789");
+/// References:
 ///
-/// let chan_note = chan.note.as_ref().unwrap();
-/// assert_eq!(chan_note.value.as_ref().unwrap(), "A note");
-/// ```
+/// [GEDCOM 5.5.1 specification, page 31](https://gedcom.io/specifications/ged551.pdf)
+/// [GEDCOM 7.0 Specification, page 44](gedcom.io/specifications/FamilySearchGEDCOMv7.html)
 #[derive(Clone, Debug, Default)]
 #[cfg_attr(feature = "json", derive(Serialize, Deserialize))]
 pub struct ChangeDate {
@@ -144,5 +88,70 @@ impl Parser for ChangeDate {
             _ => panic!("{} unhandled ChangeDate tag: {}", tokenizer.debug(), tag),
         };
         parse_subset(tokenizer, level, handle_subset);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::GedcomDocument;
+
+    #[test]
+    fn test_parse_date_record() {
+        let sample = "\
+            0 HEAD\n\
+            1 GEDC\n\
+            2 VERS 5.5\n\
+            1 DATE 2 Oct 2019\n\
+            2 TIME 0:00:00\n\
+            0 @I1@ INDI\n\
+            1 NAME Ancestor\n\
+            1 BIRT\n\
+            2 DATE BEF 1828\n\
+            1 RESI\n\
+            2 PLAC 100 Broadway, New York, NY 10005\n\
+            2 DATE from 1900 to 1905\n\
+            0 TRLR";
+
+        let mut doc = GedcomDocument::new(sample.chars());
+        let data = doc.parse_document();
+
+        let head_date = data.header.unwrap().date.unwrap();
+        assert_eq!(head_date.value.unwrap(), "2 Oct 2019");
+
+        let birt_date = data.individuals[0].events[0].date.as_ref().unwrap();
+        assert_eq!(birt_date.value.as_ref().unwrap(), "BEF 1828");
+
+        let resi_date = data.individuals[0].events[1].date.as_ref().unwrap();
+        assert_eq!(resi_date.value.as_ref().unwrap(), "from 1900 to 1905");
+    }
+
+    #[test]
+    fn test_parse_change_date_record() {
+        let sample = "\
+            0 HEAD\n\
+            1 GEDC\n\
+            2 VERS 5.5\n\
+            2 FORM LINEAGE-LINKED\n\
+            0 @MEDIA1@ OBJE\n\
+            1 FILE /home/user/media/file_name.bmp\n\
+            1 CHAN\n\
+            2 DATE 1 APR 1998\n\
+            3 TIME 12:34:56.789\n\
+            2 NOTE A note\n\
+            0 TRLR";
+
+        let mut doc = GedcomDocument::new(sample.chars());
+        let data = doc.parse_document();
+        assert_eq!(data.multimedia.len(), 1);
+
+        let obje = &data.multimedia[0];
+
+        let chan = obje.change_date.as_ref().unwrap();
+        let date = chan.date.as_ref().unwrap();
+        assert_eq!(date.value.as_ref().unwrap(), "1 APR 1998");
+        assert_eq!(date.time.as_ref().unwrap(), "12:34:56.789");
+
+        let chan_note = chan.note.as_ref().unwrap();
+        assert_eq!(chan_note.value.as_ref().unwrap(), "A note");
     }
 }
